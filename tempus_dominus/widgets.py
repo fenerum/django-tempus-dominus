@@ -45,6 +45,7 @@ class TempusDominusMixin:
     The Tempus Dominus Mixin contains shared functionality for the three types of date
     pickers offered.
     """
+    template_name = "tempus_dominus/widget.html"
 
     def __init__(self, attrs=None, options=None):
         super().__init__()
@@ -67,7 +68,7 @@ class TempusDominusMixin:
             return cdn_media()
         return forms.Media()
 
-    def render(self, name, value, attrs=None, renderer=None):
+    def get_context(self, name, value, attrs=None):
         context = super().get_context(name, value, attrs)
 
         # self.attrs = user-defined attributes from __init__
@@ -130,24 +131,20 @@ class TempusDominusMixin:
 
         # picker_id below has to be changed to underscores, as hyphens are not
         # valid in JS function names.
-        field_html = render_to_string(
-            "tempus_dominus/widget.html",
-            {
-                "type": context["widget"]["type"],
-                "picker_id": context["widget"]["attrs"]["id"].replace("-", "_"),
-                "name": context["widget"]["name"],
-                "attrs": mark_safe(attr_html),
-                "js_options": mark_safe(json.dumps(options)),
-                "prepend": prepend,
-                "append": append,
-                "icon_toggle": icon_toggle,
-                "input_toggle": input_toggle,
-                "input_group": input_group,
-                "size": size,
-            },
-        )
-
-        return mark_safe(force_str(field_html))
+        return {
+            **context,
+            "type": context["widget"]["type"],
+            "picker_id": context["widget"]["attrs"]["id"].replace("-", "_"),
+            "name": context["widget"]["name"],
+            "attrs": mark_safe(attr_html),
+            "js_options": mark_safe(json.dumps(options)),
+            "prepend": prepend,
+            "append": append,
+            "icon_toggle": icon_toggle,
+            "input_toggle": input_toggle,
+            "input_group": input_group,
+            "size": size,
+        }
 
     def moment_option(self, value):
         """
